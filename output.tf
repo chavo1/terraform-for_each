@@ -13,3 +13,11 @@ output "shuffled_output" {
 output "shuffled_output_splat" {
   value = "${random_shuffle.ip_splat.*.result}"
 }
+# conditional for_each
+output "test" {
+  value = null_resource.test[*]
+}
+
+output "local_file" {
+  value = local_file.foo[*]
+}
