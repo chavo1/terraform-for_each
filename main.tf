@@ -20,6 +20,7 @@ resource "null_resource" "server1" {
   for_each = tomap(local.my_map)
 }
 
+# random_shuffle generates a random permutation of a list of strings given as an argument
 # For Expressions
 variable "ip" {
   description = "List of ips"
@@ -41,4 +42,60 @@ variable "ip_splat" {
 
 resource "random_shuffle" "ip_splat" {
   input = var.ip_splat
+}
+
+
+# conditionals for_each
+variable "chavo-test" {
+  type = map
+  default = {
+    foo = {
+      access = ["test", "bar"]
+    },
+    bar = {
+      access = ["nottest", "alsonot"]
+    },
+    wut = {
+      access = ["test", "wut"]
+    },
+  }
+}
+
+resource "null_resource" "test" {
+  for_each = { for k, v in var.chavo-test : k => v if contains(v.access, "test") }
+
+  triggers = {
+    chavo-test = jsonencode(each.value)
+  }
+}
+
+# iterate over a list of maps
+variable "local_files" {
+  type = list(object({
+    content  = string
+    filename = string
+  }))
+  default = [
+    {
+      content  = "chavo-a",
+      filename = "a-name"
+    },
+    {
+      content  = "chavo-b",
+      filename = "b-name"
+    },
+  ]
+}
+
+locals {
+  files_map = {
+    for f in var.local_files :
+    f.filename => f
+  }
+}
+
+resource "local_file" "foo" {
+  for_each = local.files_map
+  content  = each.value.content
+  filename = each.value.filename
 }
